@@ -83,6 +83,15 @@ if (fs.existsSync(frontendDist)) {
   app.get("*", (req, res) => {
     res.sendFile(path.join(frontendDist, "index.html"));
   });
+} else {
+  app.get("/", (req, res) => {
+    res.json({
+      name: "AI Content Summarizer API",
+      status: "running",
+      endpoints: ["/api/health", "/api/summarize"],
+      note: "This is the backend API. Open your Vercel frontend URL to use the app."
+    });
+  });
 }
 
 app.listen(port, () => {
