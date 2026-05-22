@@ -1,7 +1,13 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { Mistral } from "@mistralai/mistralai";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -86,6 +92,15 @@ app.post("/api/summarize", async (req, res) => {
     });
   }
 });
+
+const frontendDist = path.join(__dirname, "../frontend/dist");
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendDist, "index.html"));
+  });
+}
 
 app.listen(port, () => {
   console.log(`Summarizer backend running on http://localhost:${port}`);
