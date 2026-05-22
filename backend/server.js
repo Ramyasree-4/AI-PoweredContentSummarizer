@@ -21,6 +21,37 @@ const summaryInstructions = {
   detailed: "Write a structured summary with brief headings and bullet points."
 };
 
+function getMistralErrorResponse(error) {
+  const status = error?.statusCode || error?.status || error?.response?.status;
+  const message = error?.message || "";
+
+  if (status === 401 || status === 403) {
+    return {
+      status: 401,
+      error: "Mistral API key is invalid or not authorized. Check MISTRAL_API_KEY in Render."
+    };
+  }
+
+  if (status === 404 || message.toLowerCase().includes("model")) {
+    return {
+      status: 400,
+      error: "Mistral model is not available. Check MISTRAL_MODEL in Render."
+    };
+  }
+
+  if (status === 429) {
+    return {
+      status: 429,
+      error: "Mistral rate limit or quota reached. Please try again later."
+    };
+  }
+
+  return {
+    status: 500,
+    error: "Mistral could not generate a summary. Check the backend logs on Render."
+  };
+}
+
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "1mb" }));
 
@@ -32,9 +63,9 @@ app.post("/api/summarize", async (req, res) => {
   try {
     const { content, summaryType = "medium" } = req.body;
 
-    if (!process.env.MISTRAL_API_KEY) {
+    if (!process.env.MISTRAL_API_KEY || process.env.MISTRAL_API_KEY === "your_mistral_api_key_here") {
       return res.status(500).json({
-        error: "Server is missing the Mistral API key."
+        error: "Server is missing the Mistral API key. Add MISTRAL_API_KEY in Render."
       });
     }
 
@@ -69,9 +100,13 @@ app.post("/api/summarize", async (req, res) => {
       summary: response.choices?.[0]?.message?.content || "No summary was returned."
     });
   } catch (error) {
-    console.error("Summarization error:", error);
-    res.status(500).json({
-      error: "Unable to generate a summary right now."
+    const response = getMistralErrorResponse(error);
+    console.error("Summarization error details:", {
+      status: error?.statusCode || error?.status || error?.response?.status,
+      message: error?.message
+    });
+    res.status(response.status).json({
+      error: response.error
     });
   }
 });
