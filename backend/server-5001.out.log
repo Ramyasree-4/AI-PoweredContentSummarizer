@@ -1,0 +1,5 @@
+
+> dev
+> node --watch server.js
+
+Summarizer backend running on http://localhost:5001
