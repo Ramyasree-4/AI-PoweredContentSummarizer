@@ -47,12 +47,12 @@ const navGroups = [
     items: [
       { id: "home", label: "Home", icon: Home },
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { id: "text", label: "Text Summarizer", icon: FileText },
-      { id: "file", label: "File Upload", icon: CloudUpload },
-      { id: "pdf", label: "PDF Summarizer", icon: BookOpen },
-      { id: "url", label: "URL / Article", icon: Globe },
-      { id: "youtube", label: "YouTube Transcript", icon: PlaySquare },
-      { id: "results", label: "Summary Results", icon: ClipboardList },
+      { id: "text", label: "Text", icon: FileText },
+      { id: "file", label: "Files", icon: CloudUpload },
+      { id: "pdf", label: "PDFs", icon: BookOpen },
+      { id: "url", label: "Articles", icon: Globe },
+      { id: "youtube", label: "YouTube", icon: PlaySquare },
+      { id: "results", label: "Results", icon: ClipboardList },
       { id: "history", label: "History", icon: History },
       { id: "analytics", label: "Analytics", icon: BarChart3 }
     ]
@@ -61,20 +61,20 @@ const navGroups = [
     title: "Account",
     items: [
       { id: "settings", label: "Settings", icon: Settings },
-      { id: "api", label: "API Configuration", icon: KeyRound },
-      { id: "profile", label: "User Profile", icon: User },
+      { id: "api", label: "API", icon: KeyRound },
+      { id: "profile", label: "Profile", icon: User },
       { id: "login", label: "Login", icon: LogIn },
       { id: "signup", label: "Signup", icon: UserPlus },
-      { id: "forgot", label: "Forgot Password", icon: LockKeyhole }
+      { id: "forgot", label: "Reset Password", icon: LockKeyhole }
     ]
   },
   {
     title: "Company",
     items: [
       { id: "about", label: "About", icon: Sparkles },
-      { id: "contact", label: "Contact / Support", icon: Contact },
-      { id: "docs", label: "Documentation", icon: Code2 },
-      { id: "admin", label: "Admin Panel", icon: Shield }
+      { id: "contact", label: "Support", icon: Contact },
+      { id: "docs", label: "Docs", icon: Code2 },
+      { id: "admin", label: "Admin", icon: Shield }
     ]
   }
 ];
@@ -251,8 +251,34 @@ function App() {
     }
   }
 
+  const isAuthPage = ["login", "signup", "forgot"].includes(activePage);
+
+  if (isAuthPage) {
+    return (
+      <div className="auth-shell">
+        <header className="auth-topbar">
+          <button className="landing-brand-button" type="button" onClick={() => navigate("home")}>
+            <Brain size={22} />
+            <span>Summara AI</span>
+          </button>
+          <div className="auth-topbar-actions">
+            <button className="secondary-button" type="button" onClick={() => navigate("home")}>Home</button>
+            <button type="button" onClick={() => navigate(activePage === "signup" ? "login" : "signup")}>
+              {activePage === "signup" ? "Login" : "Signup"}
+            </button>
+          </div>
+        </header>
+        <main className="auth-page">{renderPage()}</main>
+      </div>
+    );
+  }
+
   return (
-    <div className="app-shell">
+    <div className={activePage === "home" ? "landing-shell" : "app-shell"}>
+      {activePage === "home" ? (
+        <HomePage navigate={navigate} />
+      ) : (
+        <>
       <aside className={`sidebar ${mobileNavOpen ? "open" : ""}`}>
         <div className="brand">
           <div className="brand-mark">
@@ -315,50 +341,80 @@ function App() {
 
         <div className="page-content">{renderPage()}</div>
       </main>
+        </>
+      )}
     </div>
   );
 }
 
 function HomePage({ navigate }) {
   return (
-    <section className="hero-grid">
-      <div className="hero-copy">
-        <p className="eyebrow">AI-powered content summarizer</p>
-        <h2>Read less, understand more, move faster.</h2>
-        <p>
-          Summara AI brings text, documents, articles, PDFs, and transcripts into one focused workspace for clear summaries,
-          reusable notes, and team visibility.
-        </p>
-        <div className="hero-actions">
-          <button type="button" onClick={() => navigate("text")}>
-            <Sparkles size={18} />
-            Start summarizing
-          </button>
-          <button className="secondary-button" type="button" onClick={() => navigate("dashboard")}>
-            View dashboard
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      </div>
-      <div className="hero-preview">
-        <div className="preview-toolbar">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="summary-card featured">
-          <p>Summary quality</p>
-          <strong>Clear, accurate, structured</strong>
-          <small>Generated from articles, PDFs, URLs, and transcripts</small>
-        </div>
-        <div className="mini-grid">
-          <InfoTile icon={FileText} label="Text" value="Paste notes" />
-          <InfoTile icon={BookOpen} label="PDF" value="Upload files" />
-          <InfoTile icon={Globe} label="URL" value="Article briefs" />
-          <InfoTile icon={PlaySquare} label="Video" value="Transcript notes" />
-        </div>
-      </div>
-    </section>
+    <>
+      <header className="landing-header">
+        <button className="landing-brand-button" type="button" onClick={() => navigate("home")}>
+          <Brain size={22} />
+          <span>Summara AI</span>
+        </button>
+        <nav className="landing-nav" aria-label="Landing navigation">
+          <button type="button" onClick={() => navigate("text")}>Summarizer</button>
+          <button type="button" onClick={() => navigate("dashboard")}>Dashboard</button>
+          <button type="button" onClick={() => navigate("about")}>About</button>
+          <button type="button" onClick={() => navigate("contact")}>Support</button>
+        </nav>
+        <button className="landing-login" type="button" onClick={() => navigate("login")}>
+          <User size={17} />
+          Login
+        </button>
+      </header>
+
+      <main className="landing-page">
+        <section className="landing-hero">
+          <div className="landing-copy">
+            <p className="eyebrow">AI-powered content summarizer</p>
+            <h1>Summarize any content with AI.</h1>
+            <p>
+              Paste text, upload files, summarize PDF notes, article content, and YouTube transcripts in one clean Mistral-powered workspace.
+            </p>
+            <div className="hero-actions">
+              <button type="button" onClick={() => navigate("text")}>
+                <Sparkles size={18} />
+                Try now
+              </button>
+              <button className="secondary-button" type="button" onClick={() => navigate("dashboard")}>
+                Explore dashboard
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className="landing-showcase">
+            <div className="showcase-top">
+              <span>Summary Result</span>
+              <strong>Medium</strong>
+            </div>
+            <div className="showcase-lines">
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className="showcase-grid">
+              <InfoTile icon={FileText} label="Text" value="Notes" />
+              <InfoTile icon={BookOpen} label="PDF" value="Reports" />
+              <InfoTile icon={Globe} label="URL" value="Articles" />
+              <InfoTile icon={PlaySquare} label="Video" value="Transcripts" />
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-features">
+          <InfoTile icon={ClipboardList} label="20+ Pages" value="Full workflow" />
+          <InfoTile icon={Bot} label="Mistral AI" value="Secure backend" />
+          <InfoTile icon={History} label="History" value="Track summaries" />
+          <InfoTile icon={BarChart3} label="Analytics" value="Usage insights" />
+        </section>
+      </main>
+    </>
   );
 }
 
@@ -632,12 +688,12 @@ function ApiConfigPage() {
           <input value={API_URL} readOnly />
         </label>
         <label className="field">
-          <span>OpenAI API key location</span>
-          <input value="backend/.env -> OPENAI_API_KEY" readOnly />
+          <span>Mistral API key location</span>
+          <input value="backend/.env -> MISTRAL_API_KEY" readOnly />
         </label>
         <label className="field">
           <span>Model</span>
-          <input value="OPENAI_MODEL from backend/.env" readOnly />
+          <input value="MISTRAL_MODEL from backend/.env" readOnly />
         </label>
       </div>
       <div className="notice">API keys stay on the backend. The browser only talks to your Express API.</div>
@@ -740,7 +796,7 @@ function DocsPage() {
         {[
           ["Setup", "Install frontend and backend dependencies, then add your backend .env file."],
           ["Summarize", "POST content and summaryType to /api/summarize."],
-          ["Security", "Keep OPENAI_API_KEY on the server only. Never expose it in React."],
+          ["Security", "Keep MISTRAL_API_KEY on the server only. Never expose it in React."],
           ["Deploy", "Host React as static assets and run Express as a private API service."]
         ].map(([title, text]) => (
           <article key={title}>
@@ -835,7 +891,7 @@ function InfoTile({ icon: Icon, label, value }) {
 function StatusList() {
   return (
     <div className="status-list">
-      {["OpenAI API configured on backend", "Frontend calls Express only", "History capture enabled", "Responsive UI ready"].map((item) => (
+      {["Mistral API configured on backend", "Frontend calls Express only", "History capture enabled", "Responsive UI ready"].map((item) => (
         <div key={item}>
           <CheckCircle2 size={18} />
           <span>{item}</span>
