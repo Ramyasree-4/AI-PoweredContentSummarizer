@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Mistral } from "@mistralai/mistralai";
+import { traceable } from "langsmith/traceable";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,20 +82,25 @@ app.post("/api/summarize", async (req, res) => {
       });
     }
 
-    const response = await client.chat.complete({
-      model: process.env.MISTRAL_MODEL || "mistral-small-latest",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You summarize user-provided content clearly and accurately. Do not invent facts that are not present in the content."
-        },
-        {
-          role: "user",
-          content: `Summarize the following content in a ${summaryType} format. ${summaryInstructions[summaryType]}\n\nContent:\n${content.trim()}`
-        }
-      ]
-    });
+    const summarize = traceable(
+      async (messages) => client.chat.complete({
+        model: process.env.MISTRAL_MODEL || "mistral-small-latest",
+        messages
+      }),
+      { name: "mistral-summarize", run_type: "llm" }
+    );
+
+    const response = await summarize([
+      {
+        role: "system",
+        content:
+          "You summarize user-provided content clearly and accurately. Do not invent facts that are not present in the content."
+      },
+      {
+        role: "user",
+        content: `Summarize the following content in a ${summaryType} format. ${summaryInstructions[summaryType]}\n\nContent:\n${content.trim()}`
+      }
+    ]);
 
     res.json({
       summary: response.choices?.[0]?.message?.content || "No summary was returned."
